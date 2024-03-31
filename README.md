@@ -97,4 +97,4 @@ I have not yet implemented a configuration file. But at the beginning of the 2fa
 
 | Key | Type | Description |
 | -- | -- | -- |
-| secret_dir | string | What dir the .2fa file will go in. ! If you already have a .2fa file, you will need to migrate it manually.  Default: ~|
+| secret_dir | path, absolute | What dir the .2fa file will go in. ! If you already have a .2fa file, you will need to migrate it manually.  Default: ~|
