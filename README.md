@@ -19,7 +19,7 @@ Open the archive in your terminal. Run `pip install -r requirements.txt`
 
 ### Step 4:  
 Linux & Mac: Drop the file "2fa" into your $PATH (that is ANY directory that is returned from `echo $PATH`. /usr/bin recommended)  
-Windows: You may need to create a new PATH entry. You can do so by installing PowerToys. Navigate to: Environment Variables > User > Path > Edit.  Add a `;` (the separator), then write down the ABSOLUTE path to the 2fa file (which can be anywhere). You must then reboot for the changes to take effect.
+Windows: N/A
 
 ### Step 5:  
 Run 2fa -h anywhere to confirm you've installed the package correctly.
