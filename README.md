@@ -4,26 +4,25 @@ A small CLI to manage your 2FA tokens and secrets. It comes with very basic encr
 # Installation
 As of right now, I have decided not to use any package managers. This may come at a later date. For now, the CLI will have to manually be added to your PATH.
 
-Dependencies:
+###Dependencies:
 * Python 3.10 or higher
 * pip 22.0 or higher
 
-Step 1:  
-&nbsp;&nbsp;&nbsp;&nbsp;Click the green 'Code' button and select 'download ZIP'  
+### Step 1:  
+Click the green 'Code' button and select 'download ZIP'  
 
-Step 2:  
-&nbsp;&nbsp;&nbsp;&nbsp;Extract the archive  
+### Step 2:  
+Extract the archive  
 
-Step 3:  
-&nbsp;&nbsp;&nbsp;&nbsp;Open the archive in your terminal. Run `pip install -r requirements.txt`  
+### Step 3:  
+Open the archive in your terminal. Run `pip install -r requirements.txt`  
 
-Step 4:  
-&nbsp;&nbsp;&nbsp;&nbsp;Linux & Mac: Drop the file "2fa" into your $PATH (that is ANY directory that is returned from `echo $PATH`. /usr/bin recommended)  
-&nbsp;&nbsp;&nbsp;&nbsp;Windows: You may need to create a new PATH entry. You can do so by installing PowerToys. Navigate to: Environment Variables > User > 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Path > Edit.  Add a `;` (the separator), then write down the ABSOLUTE path to the 2fa file (which can be anywhere). Then reboot.  
+### Step 4:  
+Linux & Mac: Drop the file "2fa" into your $PATH (that is ANY directory that is returned from `echo $PATH`. /usr/bin recommended)  
+Windows: You may need to create a new PATH entry. You can do so by installing PowerToys. Navigate to: Environment Variables > User > Path > Edit.  Add a `;` (the separator), then write down the ABSOLUTE path to the 2fa file (which can be anywhere). You must then reboot for the changes to take effect.
 
-Step 4:  
-&nbsp;&nbsp;&nbsp;&nbsp;Run 2fa -h anywhere to confirm you've installed the package correctly.
+### Step 5:  
+Run 2fa -h anywhere to confirm you've installed the package correctly.
 
 # Usage
 ### 2fa {get, ls, add, del} [-h, --help]
@@ -64,10 +63,6 @@ Lists all 'secret' identifiers.
 Example: 
 ```
 2fa ls
-```
-Example in combination with grep:
-```
-2fa ls | grep 'discord'
 ```
 
 ### 2fa add [-h, --help] name secret
