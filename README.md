@@ -91,3 +91,10 @@ Deletes a secret.
 
 # .2fa file
 This script will create a small 2FA file in your home. Your secrets are stored here, in an encrypted form.
+
+# Configuration
+At the moment, I have not yet implemented a configuration file. But at the beginning of the 2fa file, there are a few keys you can change.
+
+| Key | Type | Description |
+| -- | -- | -- |
+| 2fa_dir | string | What dir the .2fa file will go in. ! If you already have a .2fa file, you will need to migrate it manually.  Default: ~|
