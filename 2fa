@@ -1,0 +1,200 @@
+#!/usr/bin/python3
+
+# temp env
+secret_dir = '~'
+
+# imports
+import argparse
+import configparser
+import sys
+import base64
+import pyotp
+import pyperclip
+import time
+import math
+from pathlib import Path
+from cryptography.fernet import Fernet
+
+# check dir (env)
+if secret_dir == '~':
+    secret_dir = str(Path.home()) + '/.2fa'
+else:
+    secret_dir = secret_dir + '/.2fa'
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    add_parser = subparsers.add_parser('add')
+    add_parser.set_defaults(func=add)
+    add_parser.add_argument('name', type=str)
+    add_parser.add_argument('secret', type=str)
+
+    get_parser = subparsers.add_parser('get')
+    get_parser.set_defaults(func=get)
+    get_parser.add_argument('name', type=str)
+    get_parser.add_argument('-c', '--copy', action='store_true')
+
+    ls_parser = subparsers.add_parser('ls')
+    ls_parser.set_defaults(func=ls)
+
+    delt_parser = subparsers.add_parser('delete')
+    delt_parser.set_defaults(func=delt)
+    delt_parser.add_argument('name', type=str)
+
+    args = parser.parse_args()
+    args.func(args)
+
+def add(args):
+    config = configparser.ConfigParser()
+    config.read(secret_dir)
+
+    # make sure secrets file exists
+    my_file_dir = Path(secret_dir)
+    if not (my_file_dir.is_file()):
+        my_file_dir.touch()
+        config['Secrets'] = {}
+
+    if not config.has_section('Secrets'):
+        config['Secrets'] = {}
+
+    # encrypt secret
+    passwd_input = input('Please enter your encryption key (save this, or keep it equal for all secrets! keep it consistent!): ')
+    key = base64.urlsafe_b64encode(passwd_input.encode('utf-8').ljust(32)[:32])
+    passwd = Fernet(key)
+    encrypted_secret = passwd.encrypt(args.secret.encode('utf-8')).decode('utf-8')
+
+    # write secret to file
+    config['Secrets'][args.name] = encrypted_secret
+
+    with open(my_file_dir, 'w') as configfile:
+        config.write(configfile)
+
+    print(f"The key `{args.name}` has sucessfully been stored. Use `2fa get {args.name}` to retrieve your OTP.")
+    
+def get(args):
+    config = configparser.ConfigParser()
+    config.read(secret_dir)
+
+    my_file_dir = Path(secret_dir)
+    if not (my_file_dir.is_file()):
+        print('No secrets file found. Create a secret first.')
+        sys.exit(1)
+
+    if not config.has_section('Secrets'):
+        print('No secrets found. Create a secret first.')
+        sys.exit(1)
+
+    # decrypt secret
+    # todo: catch errors for invalid key
+    try:
+        secret = config['Secrets'][args.name]
+        passwd_input = input('Please enter your decryption key: ')
+        print("\033[A                                                        \033[A")
+        key = base64.urlsafe_b64encode(passwd_input.encode('utf-8').ljust(32)[:32])
+        passwd = Fernet(key)
+        decrypted_secret = passwd.decrypt(secret.encode('utf-8')).decode('utf-8')
+    except:
+        print('Invalid key. Please try again.')
+        sys.exit(1)
+
+    # generate totp, get time remaining
+    totp_obj = pyotp.TOTP(decrypted_secret)
+    try:
+        totp_code = totp_obj.now()
+    except Exception as e:
+        print(f"The secret provided was invalid. Please try readding the secret.")
+        sys.exit(1)
+
+    # check if valid in 5 seconds
+    valid_thru_five = totp_obj.verify(otp=totp_code, for_time=time.time() + 5)
+    if (valid_thru_five == False):
+        print('You will receive your TOTP in 5 seconds.')
+        for i in range(6):
+            time.sleep(1)
+            print(f'{i}..',end=" ",flush=True)
+        print('\n')
+        totp_code = totp_obj.now()
+
+    # one time binary search for time remaining
+    min = 0
+    max = 60
+    count = 0
+    done = False
+    while not done and count <= 60:
+        checkAmount = (min + max) / 2
+        valid = totp_obj.verify(otp=totp_code, for_time=time.time() + checkAmount)
+
+        if not valid:
+            max = checkAmount
+        else:
+            min = checkAmount
+        count += 1
+    min = math.ceil(min)
+
+    # final result
+    print(f"{totp_code} | {min}s")
+
+    # copy to system clipboard
+    if args.copy == True: pyperclip.copy(totp_code)
+    
+def ls(args):
+    config = configparser.ConfigParser()
+    config.read(secret_dir)
+
+    my_file_dir = Path(secret_dir)
+    if not (my_file_dir.is_file()):
+        print('No secrets file found. Create a secret first.')
+        sys.exit(1)
+
+    if not config.has_section('Secrets'):
+        print('No secrets found. Create a secret first.')
+        sys.exit(1)
+    
+    count = 1
+    print('Id  ┃ Secret')
+    print('━━━━╋━━━━━━━━━━━━━━')
+    for key in config['Secrets']:
+        length = len(str(count))
+
+        charsToAdd = 3 - length
+        sbcount = count # build string but keep global scope count separate
+        for i in range(charsToAdd):
+            sbcount = str(sbcount) + ' '
+        print(f"{sbcount} ┃ {key}")
+        count += 1
+
+def delt(args):
+    config = configparser.ConfigParser()
+    config.read(secret_dir)
+
+    my_file_dir = Path(secret_dir)
+    if not (my_file_dir.is_file()):
+        print('No secrets file found. Create a secret first.')
+        sys.exit(1)
+
+    if not config.has_section('Secrets'):
+        print('No secrets found. Create a secret first.')
+        sys.exit(1)
+    
+    # decrypt, confirm password/'elevation'
+    try:
+        secret = config['Secrets'][args.name]
+        passwd_input = input('Please enter your decryption key: ')
+        print("\033[A                                                        \033[A")
+        key = base64.urlsafe_b64encode(passwd_input.encode('utf-8').ljust(32)[:32])
+        passwd = Fernet(key)
+        decrypted_secret = passwd.decrypt(secret.encode('utf-8')).decode('utf-8')
+    except:
+        print('Invalid key. Please try again.')
+        sys.exit(1)
+
+    # delete secret
+    del config['Secrets'][args.name]
+    print(f"The key `{args.name}` has been deleted.")
+
+    with open(my_file_dir, 'w') as configfile:
+        config.write(configfile)
+
+if __name__ == '__main__':
+    main()
