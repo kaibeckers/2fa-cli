@@ -90,7 +90,7 @@ Deletes a secret.
 ```
 
 # .2fa file
-This script will create a small 2FA file in your home. Your secrets are stored here, in an encrypted form.
+This script will create a small 2FA file in your home path. Your (encrypted) secrets are stored here.
 
 # Configuration
 I have not yet implemented a configuration file. But at the beginning of the 2fa file, there are a few keys you can change.
